@@ -1,0 +1,6 @@
+U_TKN = '<usr>'
+S_TKN = '<sys>'
+BOS = '<s>'
+EOS = '</s>'
+MASK = '<unused0>'
+SENT = '<unused1>'
