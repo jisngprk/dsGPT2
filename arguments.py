@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#
+#
+# Modified by jisng.prk@gmail.com
+
 """argparser configuration"""
 
 import argparse
@@ -25,7 +29,10 @@ def add_model_config_args(parser):
     """Model arguments"""
 
     group = parser.add_argument_group('model', 'model configuration')
-    group.add_argument('--model_select', type=str, default='112m')
+    group.add_argument('--model_select',
+                       type=str,
+                       default='112m',
+                       help='model selection parameter. One of [112m, 112m_half, 345m]')
 
     return parser
 
@@ -44,29 +51,70 @@ def add_training_args(parser):
 
     group = parser.add_argument_group('train', 'training configurations')
 
-    group.add_argument('--seed', type=int, default=123,
+    group.add_argument('--seed',
+                       type=int,
+                       default=123,
                        help='random seed')
-    group.add_argument('--ckpt_dir', type=str, default='./checkpoints',
+
+    group.add_argument('--ckpt_dir',
+                       type=str,
+                       default='./checkpoints',
                        help='directory for save checkpoint')
-    group.add_argument('--workspace', type=str, default='test0',
+
+    group.add_argument('--workspace',
+                       type=str,
+                       default='test0',
                        help='workspace directory name')
-    group.add_argument('--train_iters', type=int, default=100_000,
+
+    group.add_argument('--restart',
+                       type=bool,
+                       default=False,
+                       help='restart training')
+
+    group.add_argument('--ckpt_id',
+                       type=str,
+                       default='epoch:0-step:13000',
+                       help='checkpoint directory name')
+
+    group.add_argument('--vocab_load_dir',
+                       type=str,
+                       default='./vocab',
+                       help='checkpoint directory name')
+
+    group.add_argument('--vocab_id_dir',
+                       type=str,
+                       default='vocab_50257',
+                       help='checkpoint directory name')
+
+    group.add_argument('--train_iters',
+                       type=int,
+                       default=100_000,
                        help='# of iterations for training')
-    group.add_argument('--tr_ratio', type=float, default=0.95,
-                       help='ratio for training in total dataset')
-    group.add_argument('--loss_type', type=str, default='lm_loss',
-                       help='cross entropy loss')
+
+    group.add_argument('--tr_ratio',
+                       type=float,
+                       default=0.95,
+                       help='ratio of training set in total dataset')
+
+    group.add_argument('--loss_type',
+                       type=str,
+                       default='lm_loss',
+                       help='loss selection argument. Only "lm_loss" is supported')
+
     parser.add_argument('--wandb_dir',
                         type=str,
                         default='kg_gpt2_0215',
-                        help='for setting wandb')
+                        help='for setting wandb project')
 
     # distributed training args
-    group.add_argument('--distributed-backend', default='nccl',
+    group.add_argument('--distributed-backend',
+                       default='nccl',
                        help='which backend to use for distributed '
                        'training. One of [gloo, nccl]')
 
-    group.add_argument('--local_rank', type=int, default=None,
+    group.add_argument('--local_rank',
+                       type=int,
+                       default=None,
                        help='local rank passed from distributed launcher')
 
     return parser
@@ -77,12 +125,24 @@ def add_evaluation_args(parser):
 
     group = parser.add_argument_group('validation', 'validation configurations')
 
-    group.add_argument('--eval_batch_size', type=int, default=128,
+    group.add_argument('--eval_batch_size',
+                       type=int,
+                       default=128,
                        help='# of batch size for evaluating on each GPU')
-    group.add_argument('--load_dir', type=str, default='./checkpoints/test2')
-    group.add_argument('--ckpt_id', type=str)
+
+    # group.add_argument('--loadl_dir',
+    #                    type=str,
+    #                    default='./checkpoints/test2',
+    #                    help='checkpoint parent directory')
+    #
+    # group.add_argument('--ckpt_id',
+    #                    type=str,
+    #                    default='epoch7-step78000-loss4.06',
+    #                    help='checkpoint id directory')
+
 
     return parser
+
 
 def add_text_generate_args(parser):
     """Text generate arguments."""
@@ -96,21 +156,58 @@ def add_data_args(parser):
     """Train/valid/test data arguments."""
 
     group = parser.add_argument_group('data', 'data configurations')
-    group.add_argument('--config_train', type=str)
+    group.add_argument('--config_train',
+                       type=str,
+                       help='mongoDB configuration for loading training dataset')
 
     return parser
 
 
 def add_preprocessing_args(parser):
     group = parser.add_argument_group('preprocessing', 'data preprocessing')
-    group.add_argument('--config_src', type=str)
-    group.add_argument('--config_trgt', type=str)
-    group.add_argument('--num_process', type=int, default=10)
-    group.add_argument('--vocab_train_dir', type=str)
-    group.add_argument('--vocab_train_fname', type=str)
-    group.add_argument('--vocab_dir', type=str)
-    group.add_argument('--nsample', type=int)
-    group.add_argument('--vocab_prefix', type=str)
+
+    group.add_argument('--config_src',
+                       type=str,
+                       help='config file of source mongoDB ')
+
+    group.add_argument('--config_trgt',
+                       type=str,
+                       help='config file of target mongoDB')
+
+    group.add_argument('--num_process',
+                       type=int,
+                       default=10,
+                       help='number of process used to download the text files from mongoDB')
+
+    group.add_argument('--vocab_size',
+                       type=int,
+                       default=50257,
+                       help='vocab size')
+
+    group.add_argument('--nspecial',
+                       type=int,
+                       default=100,
+                       help='# of special token')
+
+    group.add_argument('--vocab_train_dir',
+                       type=str,
+                       help='directory saving text files for vocab training')
+
+    group.add_argument('--vocab_train_fname',
+                       type=str,
+                       help='prefix of text files for vocab training')
+
+    group.add_argument('--vocab_dir',
+                       type=str,
+                       help='directory for saving trained vocab')
+
+    group.add_argument('--nsample',
+                       type=int,
+                       help='number of sample used to train vocab')
+
+    group.add_argument('--vocab_prefix',
+                       type=str,
+                       default='prefix of vocab file')
 
     return parser
 
@@ -118,7 +215,7 @@ def add_preprocessing_args(parser):
 def get_ds_args():
     """Parse all the args."""
 
-    parser = argparse.ArgumentParser(description='PyTorch BERT Model')
+    parser = argparse.ArgumentParser(description='PyTorch koGPT2 Model')
     parser = add_model_config_args(parser)
     parser = add_training_args(parser)
     parser = add_evaluation_args(parser)

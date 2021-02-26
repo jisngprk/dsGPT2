@@ -5,4 +5,4 @@ python vocab_downloader.py \
       --num_process 30 \
       --vocab_train_dir ./data_files/vocab_trains \
       --vocab_train_fname vocab_train \
-      --nsample 10_000_000
+      --nsample 30_000_000

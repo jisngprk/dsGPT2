@@ -211,8 +211,22 @@ class Trainer:
         ntr_samples = len(self.tr_dataloader)
         wpath = pathlib.Path(args.ckpt_dir) / pathlib.Path(args.workspace)
 
-        epoch = 0
-        step_cnt = 0
+        logging.info(args)
+
+        if args.restart:
+            _, client_state = self.model_engine.load_checkpoint(wpath, args.ckpt_id)
+            epoch = client_state['epoch']
+            step_cnt = client_state['step_cnt']
+            loss_avg = client_state['loss_avg']
+            logging.info("[Restart]")
+            logging.info("[Restart]: epoch: %d" % epoch)
+            logging.info("[Restart]: step_cnt: %d" % step_cnt)
+            logging.info("[Restart]: loss_avg: %f" % loss_avg)
+        else:
+            epoch = 0
+            step_cnt = 0
+            logging.info("[Initial start]")
+
         self.tr_sampler.set_epoch(epoch)
         self.val_sampler.set_epoch(epoch)
         logging.info("[Total train iterations]: %d" % args.train_iters)
@@ -256,10 +270,12 @@ class Trainer:
                 }, step=step_cnt)
 
             if step_cnt % 2000 == 0:
-                fstring = 'epoch%d-step%d-loss%.2f' % (epoch, step_cnt, loss_avg)
+                fstring = 'epoch%d-step%d' % (epoch, step_cnt)
                 self.model_engine.save_checkpoint(wpath, fstring, client_state={
                     'epoch': epoch,
-                    'step': step_cnt})
+                    'step': step_cnt,
+                    'loss_avg': loss_avg
+                })
 
                 logging.info("[Rank - %d, MODEL SAVE]: %s" % (args.rank, os.path.join(wpath, fstring)))
 
@@ -281,11 +297,20 @@ if __name__ == '__main__':
         logging.error("[Fail]: Select model type")
         raise NotImplementedError
 
+    vocab_size = int(args.vocab_id_dir.split('_')[1])
+    selected_config['vocab_size'] = vocab_size
     args.selected_config = selected_config
     logging.info(args)
+    logging.info("vocab size %s" % vocab_size)
 
-    tokenizer = get_tokenizer(vocab_file='./vocab/vocab_web/vocab_web-vocab.json',
-                              merge_file='./vocab/vocab_web/vocab_web-merges.txt',
+    vocab_dir = pathlib.Path(args.vocab_load_dir) /pathlib.Path(args.vocab_id_dir)
+    vocab_file = list(vocab_dir.glob("*-vocab.json"))[0]
+    vocab_file = str(vocab_file)
+    merge_file = list(vocab_dir.glob("*-merges.txt"))[0]
+    merge_file = str(merge_file)
+
+    tokenizer = get_tokenizer(vocab_file=vocab_file,
+                              merge_file=merge_file,
                               enable_postprocessiing=True,
                               enable_padding=True,
                               max_len=selected_config['n_ctx'])

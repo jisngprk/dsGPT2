@@ -45,8 +45,8 @@ if __name__ == '__main__':
     train(paths=paths,
           save_dir=args.vocab_dir,
           prefix=args.vocab_prefix,
-          nspecial=100,
-          vocab_size=32000)
+          nspecial=args.nspecial,
+          vocab_size=args.vocab_size)
 
 
 

@@ -12,9 +12,10 @@ DISTRIBUTED_ARGS="--nproc_per_node $GPUS_PER_NODE --nnodes $NNODES --node_rank $
 python -m torch.distributed.launch $DISTRIBUTED_ARGS \
 	ds_trainer.py \
 	--model_select 112m \
-	--workspace test8 \
+	--vocab_id_dir vocab_32000 \
+	--workspace test9 \
 	--eval_batch_size 128 \
-	--train_iters 200_000 \
+	--train_iters 400_000 \
 	--config_train ./config/db_config_train.json \
 	--deepspeed \
 	--deepspeed_config ./config/ds_config.json

@@ -7,7 +7,7 @@ kogpt2_config_112m_half = {
     "n_head": 6,
     "n_layer": 6,
     "n_positions": 64,
-    "vocab_size": 32000,
+    "vocab_size": 50257,
     "activation_function": "gelu"
 }
 
@@ -21,7 +21,7 @@ kogpt2_config_112m = {
     "n_head": 12,
     "n_layer": 12,
     "n_positions": 128,
-    "vocab_size": 32000,
+    "vocab_size": 50257,
     "resid_pdrop": 0,
     "embd_pdrop": 0,
     "attn_pdrop": 0,
@@ -37,6 +37,6 @@ kogpt2_config_345m = {
     "n_head": 16,
     "n_layer": 24,
     "n_positions": 64,
-    "vocab_size": 32000,
+    "vocab_size": 50257,
     "activation_function": "gelu"
 }
