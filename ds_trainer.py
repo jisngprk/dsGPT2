@@ -299,8 +299,8 @@ if __name__ == '__main__':
 
     vocab_size = int(args.vocab_id_dir.split('_')[1])
     selected_config['vocab_size'] = vocab_size
+
     args.selected_config = selected_config
-    logging.info(args)
     logging.info("vocab size %s" % vocab_size)
 
     vocab_dir = pathlib.Path(args.vocab_load_dir) /pathlib.Path(args.vocab_id_dir)

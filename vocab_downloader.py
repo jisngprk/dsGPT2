@@ -60,7 +60,7 @@ if __name__ == '__main__':
     idx_list = random.sample(idx_list, args.nsample)
     nstep = args.nsample//args.num_process
 
-    # print(len(idx_list), idx_list[:100])
+    logging.info("[Download]: %d samples" % args.nsample)
     fname_list = []
     mplist = []
     for i in range(args.num_process+1):

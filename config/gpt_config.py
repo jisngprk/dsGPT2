@@ -22,9 +22,9 @@ kogpt2_config_112m = {
     "n_layer": 12,
     "n_positions": 128,
     "vocab_size": 50257,
-    "resid_pdrop": 0,
-    "embd_pdrop": 0,
-    "attn_pdrop": 0,
+    "resid_pdrop": 0.1,
+    "embd_pdrop": 0.1,
+    "attn_pdrop": 0.1,
     "activation_function": "gelu"
 }
 

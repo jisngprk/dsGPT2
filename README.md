@@ -10,14 +10,17 @@ The goal is as follows:
 * MongoDB
 * DeepSpeed
 * PyTorch
-* Huggingface - transformers (GPT2LMHeadModel)
-* Huggingface - tokenizers (ByteLevelBPETokenizer)
+* Huggingface / transformers  
+* Huggingface / tokenizers
 
 ## Key features
 * MongoWrapper
-    * *Fast* - fetching document with indexing collection (0.1ms/1doc)
-    * *Memory-Efficient* - lazy loading (memory usage TODO)  
-    * *Seamless integration* - collections accessible by unified index      
+    * *Fast* 
+        - fetching document with indexing collection (0.1ms/1doc)
+    * *Memory-Efficient* 
+        - lazy loading (memory usage TODO)  
+    * *Seamless integration* 
+        - collections accessible by unified index      
     
  * Pipeline
     * Manage with environment with dockers
@@ -35,7 +38,7 @@ The goal is as follows:
 
 ### Document Schema
 
-Collection should be indexed by the 'idx' field to get fast access.
+Data collection should be indexed by the 'idx' field to get fast access.
 
 ```json
 {
@@ -48,9 +51,18 @@ Collection should be indexed by the 'idx' field to get fast access.
 * "form": Original text field
 * "filt_text": filtered text field
 
+Also, the DB should have 'meta_info' collection. The collection has the schema as follows:
+```json
+{
+   "_id": ObjectID,
+   "collection_name": "collection name",
+   "num_docs": 110000
+}
+```
+
 ### Config Schema
 
-
+Config files are used for the MongoWrapper
 ```json
 
 {
@@ -60,27 +72,68 @@ Collection should be indexed by the 'idx' field to get fast access.
 }
 ```
 * "COLLECTIONS": list all the collection names to integrate in a single index list
+
 ### Build/Run Docker
 
+1. Download the deepspeed image from hub 
+    - I have used torch 1.5 with cuda 10.1
+        - docker pull deepspeed/deepspeed:v031_torch15_cuda101
+       
+2. Install required packages
+    ```shell script
+    pip install requirements.txt
+    ```
+
+3. Commit the container as image
+
+3. Run .sh files with the image with following commands
+```shell script
+docker run -d --name CONTAINER_NAME -e WANDB_API_KEY=WANDB_KEY --gpus='"device=0,1"' --network host -v PROJECT_DIR:/usr/src/app -w /usr/src/app deepspeed/deepspeed:v031_torch15_cuda101 bash ds_trainer.sh
+```
+
+
 ### Download the vocab training files
+The script run vocab_downloader.py <br>
+It downloads collections to separated text files with multiprocessing.
+It consumes about 22min to fetch 50M text lines with 30 number of processes.
+
+```shell script
+bash vocab_downloader.sh
+```
 
 ### Train the vocab
+The script run vocab_trainer.py <br>
+It trains ByteLevelBPETokenizer.
 
-### Train the vodel
+```shell script
+bash vocab_trainer.sh
+```
+### Train the model
+The script run ds_trainer.py
+It trains GPT2LMHeadModel with data collections specified in db_config.json
+Also, It uses ds_config.json which handles the behavior of DeepSpeed engine
+such as optimizer, lr scheduler
+
+```shell script
+bash ds_trainer.sh
+```
 
 The detail of command-line usage is as follows:
 
+    
     usage: ds_trainer.py [-h] [--model_select MODEL_SELECT] [--seed SEED]
                          [--ckpt_dir CKPT_DIR] [--workspace WORKSPACE]
-                         [--train_iters TRAIN_ITERS] [--tr_ratio TR_RATIO]
-                         [--loss_type LOSS_TYPE] [--wandb_dir WANDB_DIR]
+                         [--restart RESTART] [--ckpt_id CKPT_ID]
+                         [--vocab_load_dir VOCAB_LOAD_DIR]
+                         [--vocab_id_dir VOCAB_ID_DIR] [--train_iters TRAIN_ITERS]
+                         [--tr_ratio TR_RATIO] [--loss_type LOSS_TYPE]
+                         [--wandb_dir WANDB_DIR]
                          [--distributed-backend DISTRIBUTED_BACKEND]
                          [--local_rank LOCAL_RANK]
-                         [--eval_batch_size EVAL_BATCH_SIZE] [--load_dir LOAD_DIR]
-                         [--ckpt_id CKPT_ID] [--config_train CONFIG_TRAIN]
-                         [--deepspeed] [--deepspeed_config DEEPSPEED_CONFIG]
-                         [--deepscale] [--deepscale_config DEEPSCALE_CONFIG]
-                         [--deepspeed_mpi]
+                         [--eval_batch_size EVAL_BATCH_SIZE]
+                         [--config_train CONFIG_TRAIN] [--deepspeed]
+                         [--deepspeed_config DEEPSPEED_CONFIG] [--deepscale]
+                         [--deepscale_config DEEPSCALE_CONFIG] [--deepspeed_mpi]
     
     PyTorch koGPT2 Model
     
@@ -103,6 +156,12 @@ The detail of command-line usage is as follows:
       --ckpt_dir CKPT_DIR   directory for save checkpoint
       --workspace WORKSPACE
                             workspace directory name
+      --restart RESTART     restart training
+      --ckpt_id CKPT_ID     checkpoint directory name
+      --vocab_load_dir VOCAB_LOAD_DIR
+                            checkpoint directory name
+      --vocab_id_dir VOCAB_ID_DIR
+                            checkpoint directory name
       --train_iters TRAIN_ITERS
                             # of iterations for training
       --tr_ratio TR_RATIO   ratio of training set in total dataset
@@ -119,8 +178,6 @@ The detail of command-line usage is as follows:
     
       --eval_batch_size EVAL_BATCH_SIZE
                             # of batch size for evaluating on each GPU
-      --load_dir LOAD_DIR   checkpoint parent directory
-      --ckpt_id CKPT_ID     checkpoint id directory
     
     Text generation:
       configurations
@@ -145,7 +202,6 @@ The detail of command-line usage is as follows:
       --deepspeed_mpi       Run via MPI, this will attempt to discover the
                             necessary variables to initialize torch distributed
                             from the MPI environment
-
 
 ### Evaluate
 
