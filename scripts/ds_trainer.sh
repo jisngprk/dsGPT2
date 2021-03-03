@@ -14,9 +14,9 @@ python -m torch.distributed.launch $DISTRIBUTED_ARGS \
 	--wandb_dir kg_gpt2_0215 \
 	--model_select 112m \
 	--vocab_id_dir vocab_50257 \
-	--workspace test16 \
+	--workspace test23 \
 	--eval_batch_size 128 \
-	--train_iters 200_000 \
+	--train_iters 150000 \
 	--config_train ./config/db_config_train.json \
 	--deepspeed \
 	--deepspeed_config ./config/ds_config.json

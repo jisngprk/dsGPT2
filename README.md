@@ -30,6 +30,11 @@ The goal is as follows:
     * Train large model with limited resource
     * Try to use it: https://www.deepspeed.ai/
 
+ * CrossEntropy loss with large batch size
+    * FP16 has range of +-65,504
+    * To avoid the overflow, the mean of sample mean over token loss is used instead of global average of each token loss
+    * The mean of sample mean can estimate the population mean 
+    
 ## Usage
 
 ### Note
@@ -42,7 +47,7 @@ Data collection should be indexed by the 'idx' field to get fast access.
 
 ```json
 {
-   "_id": ObjectID,
+   "_id": "ObjectID",
    "idx": 0,
    "form": "original text",
    "filt_text": "filtered text"
@@ -54,7 +59,7 @@ Data collection should be indexed by the 'idx' field to get fast access.
 Also, the DB should have 'meta_info' collection. The collection has the schema as follows:
 ```json
 {
-   "_id": ObjectID,
+   "_id": "ObjectID",
    "collection_name": "collection name",
    "num_docs": 110000
 }
@@ -88,7 +93,7 @@ Config files are used for the MongoWrapper
 
 3. Run .sh files with the image with following commands
 ```shell script
-docker run -d --name CONTAINER_NAME -e WANDB_API_KEY=WANDB_KEY --gpus='"device=0,1"' --network host -v PROJECT_DIR:/usr/src/app -w /usr/src/app deepspeed/deepspeed:v031_torch15_cuda101 bash ds_trainer.sh
+docker run -d --name CONTAINER_NAME -e WANDB_API_KEY=WANDB_KEY --gpus='"device=0,1"' --network host -v PROJECT_DIR:/usr/src/app -w /usr/src/app deepspeed/deepspeed:v031_torch15_cuda101 bash scripts/ds_trainer.sh
 ```
 
 
@@ -98,7 +103,7 @@ It downloads collections to separated text files with multiprocessing.
 It consumes about 22min to fetch 50M text lines with 30 number of processes.
 
 ```shell script
-bash vocab_downloader.sh
+bash scripts/vocab_downloader.sh
 ```
 
 ### Train the vocab
@@ -106,7 +111,7 @@ The script run vocab_trainer.py <br>
 It trains ByteLevelBPETokenizer.
 
 ```shell script
-bash vocab_trainer.sh
+bash scripts/vocab_trainer.sh
 ```
 ### Train the model
 The script run ds_trainer.py
@@ -115,7 +120,7 @@ Also, It uses ds_config.json which handles the behavior of DeepSpeed engine
 such as optimizer, lr scheduler
 
 ```shell script
-bash ds_trainer.sh
+bash scripts/ds_trainer.sh
 ```
 
 The detail of command-line usage is as follows:
@@ -202,6 +207,21 @@ The detail of command-line usage is as follows:
       --deepspeed_mpi       Run via MPI, this will attempt to discover the
                             necessary variables to initialize torch distributed
                             from the MPI environment
+
+
+### Data
+| Data  |  # of Documents  |
+|---|---|
+|Newspaper|  37.2M| 
+|Spoken|  20.6M | 
+|Web|  10.5M | 
+|Written|  27.2M
+|------|  ------ 
+|Total|  95.5M 
+
+* Word count ~= 2B
+* 모두의 말뭉치 사용
+
 
 ### Evaluate
 

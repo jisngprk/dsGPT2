@@ -117,13 +117,13 @@ class Trainer:
                tr_sampler, val_sampler
 
     def _get_optimizer(self):
+        # DeepSpeed engine control "weight decay" on parameters not in "no_decay" groups
 
         # LayerNorm, Bias, Embedding
         no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
         param_groups = [
             {
-                "params": [p for n, p in self.model.named_parameters() if not any(nd in n for nd in no_decay)],
-                "weight_decay": 0.01,
+                "params": [p for n, p in self.model.named_parameters() if not any(nd in n for nd in no_decay)]
             },
             {
                 "params": [p for n, p in self.model.named_parameters() if any(nd in n for nd in no_decay)],
