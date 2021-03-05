@@ -16,15 +16,16 @@ The goal is as follows:
 ## Key features
 * MongoWrapper
     * *Fast* 
-        - fetching document with indexing collection (0.1ms/1doc)
+        - Fetching document with indexing collection (0.1ms/1doc)
     * *Memory-Efficient* 
-        - lazy loading (memory usage TODO)  
+        - Lazy loading (memory usage TODO)  
     * *Seamless integration* 
-        - collections accessible by unified index      
+        - Collections accessible by unified index      
     
  * Pipeline
     * Manage with environment with dockers
-    * Run each pipeline with bash file    
+    * Run each pipeline with bash file
+    * Easy to use   
     
  * Deepspeed engine
     * Train large model with limited resource
@@ -67,7 +68,9 @@ Also, the DB should have 'meta_info' collection. The collection has the schema a
 
 ### Config Schema
 
-Config files are used for the MongoWrapper
+MongoWrapper requires a config file that describes which collections should be connected
+The files are located in config directory
+
 ```json
 
 {
@@ -84,23 +87,27 @@ Config files are used for the MongoWrapper
     - I have used torch 1.5 with cuda 10.1
         - docker pull deepspeed/deepspeed:v031_torch15_cuda101
        
-2. Install required packages
+2. Install required packages in a container from the image
     ```shell script
     pip install requirements.txt
     ```
 
 3. Commit the container as image
 
-3. Run .sh files with the image with following commands
+3. Run .sh files with the image using the commands:
 ```shell script
 docker run -d --name CONTAINER_NAME -e WANDB_API_KEY=WANDB_KEY --gpus='"device=0,1"' --network host -v PROJECT_DIR:/usr/src/app -w /usr/src/app deepspeed/deepspeed:v031_torch15_cuda101 bash scripts/ds_trainer.sh
 ```
+Maybe you can change some gpus setting in the '--gpus' option or in scripts dpending on your node environment
+* WANDB_API_KEY: wandb api key that you can get in your wandb account
+* PROJECT_DIR: directory in which you download this project
 
 
 ### Download the vocab training files
 The script run vocab_downloader.py <br>
-It downloads collections to separated text files with multiprocessing.
+It downloads data used for training vocab from collections to separated text files with multiprocessing.
 It consumes about 22min to fetch 50M text lines with 30 number of processes.
+Your data should be prepared in MongoDB with specified form
 
 ```shell script
 bash scripts/vocab_downloader.sh
