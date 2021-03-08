@@ -62,13 +62,14 @@ class ModelLoader:
         self.user_info[session_key] = user_name
 
     def _handle_replace_str(self, sentence):
-        sentence = re.sub("name[0-9]+", "<template>", sentence)
+        sentence = re.sub("name[0-9]+", "", sentence)
         return sentence
 
     def generate(self, sentence):
         logging.info("[Run]: generate sentence")
         logging.info("[Input]: %s" % sentence)
 
+        sentence = sentence.strip()
         enc = self.tokenizer.encode(sentence)
 
         if self.args.train_mode == 'finetune':
@@ -81,6 +82,7 @@ class ModelLoader:
         enc_tensor = torch.LongTensor([enc_ids])
 
         if self.args.train_mode == 'pretrain':
+            logging.info("[Run]: pretrained model")
             out = self.model.generate(enc_tensor,
                                       pad_tokien_id=self.tokenizer.token_to_id('<pad>'),
                                       bos_token_id=self.tokenizer.token_to_id('<s>'),
@@ -92,6 +94,7 @@ class ModelLoader:
                                       temperature=self.args.temperature,
                                       repetition_penalty=self.args.repetition_penalty)
         elif self.args.train_mode == 'finetune':
+            logging.info("[Run]: finetuned model")
             out = self.model.generate(enc_tensor,
                                       pad_tokien_id=self.tokenizer.token_to_id('<pad>'),
                                       bos_token_id=self.tokenizer.token_to_id('<s>'),
@@ -107,7 +110,13 @@ class ModelLoader:
         out_sent = self._handle_replace_str(out_sent)
         enc_sent = self.tokenizer.decode(enc_ids)
 
-        resp_sent = out_sent.replace(enc_sent, "")
+        if self.args.train_mode == 'pretrain':
+            resp_sent = out_sent
+        elif self.args.train_mode == 'finetune':
+            resp_sent = out_sent.replace(enc_sent, "")
+        else:
+            raise NotImplementedError
+
         resp_sent = resp_sent.replace("<s>", "")
         resp_sent = resp_sent.replace("</s>", "")
         resp_sent = resp_sent.replace("<sys>", "")

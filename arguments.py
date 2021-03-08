@@ -239,6 +239,11 @@ def add_text_generate_args(parser):
                        default=1,
                        help='# of beam search')
 
+    group.add_argument('--port',
+                       type=int,
+                       default=4000,
+                       help='API port')
+
 
     return parser
 

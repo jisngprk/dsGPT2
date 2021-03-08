@@ -82,25 +82,24 @@ The files are located in config directory
 * "COLLECTIONS": list all the collection names to integrate in a single index list
 
 ### Build/Run Docker
+0. Make directory './vocab', './checkpoints' and make './config/db_config.json'. Also make './data_files' directory to save vocab training files.
 
-1. Download the deepspeed image from hub 
-    - I have used torch 1.5 with cuda 10.1
-        - docker pull deepspeed/deepspeed:v031_torch15_cuda101
-       
-2. Install required packages in a container from the image
+1. You can build the image with Dockerfile-dev. It download deepspeed image used for torch 1.5^M
     ```shell script
-    pip install requirements.txt
+    docker build -t IMAGE_TAG -f Dockerfile-dev .
     ```
 
-3. Commit the container as image
 
-3. Run .sh files with the image using the commands:
-```shell script
-docker run -d --name CONTAINER_NAME -e WANDB_API_KEY=WANDB_KEY --gpus='"device=0,1"' --network host -v PROJECT_DIR:/usr/src/app -w /usr/src/app deepspeed/deepspeed:v031_torch15_cuda101 bash scripts/ds_trainer.sh
-```
+2. Run .sh files with the image using the commands:^M
+    ```shell script
+    docker run -d --name CONTAINER_NAME -e WANDB_API_KEY=WANDB_KEY --gpus='"device=0,1"' --network host -v PROJECT_DIR:/usr/src/app -w /usr/src/app DOCKER_IMAGE bash scripts/ds_trainer.sh
+    ```
+
 Maybe you can change some gpus setting in the '--gpus' option or in scripts dpending on your node environment
 * WANDB_API_KEY: wandb api key that you can get in your wandb account
 * PROJECT_DIR: directory in which you download this project
+
+The deepspeed or torch version can have dependency with the gpu drivers, torch versions etc. You maybe check your environment.
 
 
 ### Download the vocab training files
@@ -227,7 +226,7 @@ The detail of command-line usage is as follows:
 |Total|  95.5M 
 
 * Word count ~= 2B
-* 모두의 말뭉치 사용
+* Data source: 국립국어원 모두의 말뭉치 (웹 말뭉치, 신문 말뭉치, 문어 말뭉치, 구어 말뭉치, 메신저 말뭉치)^M
 
 
 ### Evaluate
