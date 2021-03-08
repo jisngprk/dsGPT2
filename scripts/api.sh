@@ -1,6 +1,6 @@
 #! /bin/bash
 
-python model_loader.py \
+python api.py \
       --model_select 112m \
       --vocab_id_dir vocab_50257 \
 	    --workspace finetune4 \
@@ -10,8 +10,8 @@ python model_loader.py \
 	    --enable_eos True \
 	    --truncated_len 122 \
 	    --repetition_penalty 1.5 \
-	    --min_length 5 \
-	    --max_length 10 \
+	    --min_length 10 \
+	    --max_length 25 \
 	    --train_mode finetune \
 	    --num_beams 5 \
 	    --use_cpu True

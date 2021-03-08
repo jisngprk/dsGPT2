@@ -14,13 +14,13 @@ class ModelLoader:
 
         vocab_size, vocab_file, merge_file = extract_vocab_path(args)
         selected_config = load_gpt2_config(args)
-        self._set_device()
+        self._set_device(args)
         self._load_tokenizer(vocab_file, merge_file, args)
         self._load_model(selected_config, args)
 
         self.user_info = dict()
 
-    def _set_device(self):
+    def _set_device(self, args):
         # TODO: TEST GPU load
         if args.use_cpu:
             logging.info("[Device]: CPU %d is selected" % args.gpu_id)
@@ -71,7 +71,7 @@ class ModelLoader:
 
         enc = self.tokenizer.encode(sentence)
 
-        if args.train_mode == 'finetune':
+        if self.args.train_mode == 'finetune':
             enc_ids = [self.tokenizer.token_to_id('<usr>')] + enc.ids + [self.tokenizer.token_to_id('<sys>')] \
                     + [self.tokenizer.token_to_id('<s>')]
         else:
@@ -80,7 +80,7 @@ class ModelLoader:
         logging.info(enc_ids)
         enc_tensor = torch.LongTensor([enc_ids])
 
-        if args.train_mode == 'pretrain':
+        if self.args.train_mode == 'pretrain':
             out = self.model.generate(enc_tensor,
                                       pad_tokien_id=self.tokenizer.token_to_id('<pad>'),
                                       bos_token_id=self.tokenizer.token_to_id('<s>'),
@@ -91,7 +91,7 @@ class ModelLoader:
                                       top_k=self.args.top_k,
                                       temperature=self.args.temperature,
                                       repetition_penalty=self.args.repetition_penalty)
-        elif args.train_mode == 'finetune':
+        elif self.args.train_mode == 'finetune':
             out = self.model.generate(enc_tensor,
                                       pad_tokien_id=self.tokenizer.token_to_id('<pad>'),
                                       bos_token_id=self.tokenizer.token_to_id('<s>'),
@@ -122,14 +122,12 @@ if __name__ == '__main__':
     args = get_ds_args()
 
     ml = ModelLoader(args)
-    out = ml.tokenizer.encode("a b c d")
-    print(out.ids)
-    # while True:
-    #     input_sent = input("input > ")
-    #     out_ids, out_sent, enc_sent, resp_sent = ml.generate(input_sent)
-    #
-    #     print("-")
-    #     print(out_ids)
-    #     print(out_sent)
-    #     print(enc_sent)
-    #     print(resp_sent)
+    while True:
+        input_sent = input("input > ")
+        out_ids, out_sent, enc_sent, resp_sent = ml.generate(input_sent)
+
+        print("-")
+        print(out_ids)
+        print(out_sent)
+        print(enc_sent)
+        print(resp_sent)
