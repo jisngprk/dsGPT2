@@ -23,9 +23,7 @@ class MongoWrapper:
         with open(config_path) as fp:
             db_config = json.load(fp)
         self.db_config = db_config
-
-        if filter_func:
-            self.filter_func = filter_func
+        self.filter_func = filter_func
 
         conn_str = db_config['MONGO_CONNECTION_STRING']
         con_db = db_config['MONGO_CONNECTION_DB']
