@@ -11,9 +11,7 @@ config_path = 'config/db_config_filt_web.json'
 mw = MongoWrapper(config_path)
 
 tokenizer = get_tokenizer(vocab_file='./vocab/vocab_web/vocab_web-vocab.json',
-                          merge_file='./vocab/vocab_web/vocab_web-merges.txt',
-                          enable_postprocessiing=False,
-                          enable_padding=False)
+                          merge_file='./vocab/vocab_web/vocab_web-merges.txt', enable_padding=False)
 
 freq = []
 nbatch = 10000

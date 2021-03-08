@@ -12,7 +12,7 @@ class MongoWrapper:
     Load single turn Q,A data
 
     """
-    def __init__(self, config_path):
+    def __init__(self, config_path, filter_func=None):
         """
         1. MongoDB collection들을 통합된 인덱스로 접근할 수 있음
         2. 개별 collection의 idx는 개수, 순서, 유니크를 보장해야함
@@ -23,6 +23,9 @@ class MongoWrapper:
         with open(config_path) as fp:
             db_config = json.load(fp)
         self.db_config = db_config
+
+        if filter_func:
+            self.filter_func = filter_func
 
         conn_str = db_config['MONGO_CONNECTION_STRING']
         con_db = db_config['MONGO_CONNECTION_DB']
@@ -50,10 +53,9 @@ class MongoWrapper:
             for nidx in range(idx.start, idx.stop):
                 collection_name, idx = self._convert_idx(nidx)
                 data = self.collections[collection_name].find({'idx': idx})[0]
-                if 'q' in data:
-                    data['q'] = str(data['q'])
-                if 'a' in data:
-                    data['a'] = str(data['a'])
+
+                if self.filter_func:
+                    data = self.filter_func(data)
 
                 doc = {'data': data, 'collection_name': collection_name}
                 docs.append(doc)
@@ -61,10 +63,9 @@ class MongoWrapper:
         else:
             collection_name, idx = self._convert_idx(idx)
             data = self.collections[collection_name].find({'idx': idx})[0]
-            if 'q' in data:
-                data['q'] = str(data['q'])
-            if 'a' in data:
-                data['a'] = str(data['a'])
+
+            if self.filter_func:
+                data = self.filter_func(data)
 
             doc = {'data': data, 'collection_name': collection_name}
             docs.append(doc)

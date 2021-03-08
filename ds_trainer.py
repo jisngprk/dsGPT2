@@ -7,8 +7,10 @@ import wandb
 import torch
 from torch.utils.data import DataLoader
 from config.gpt_config import kogpt2_config_112m_half, kogpt2_config_112m, kogpt2_config_345m
-from model.kogpt2 import get_gpt2_model, get_tokenizer
+from model.kogpt2 import get_gpt2_model, get_tokenizer, extract_vocab_path, load_gpt2_config
 from dataset.lm_dataset import MaskedLMDataset
+from dataset.conv_dataset import ConvDataset
+from dataset.filter_funcs import conv_filter
 from libs.mongo_wrapper import MongoWrapper
 from arguments import get_ds_args
 import deepspeed
@@ -222,6 +224,14 @@ class Trainer:
             logging.info("[Restart]: epoch: %d" % epoch)
             logging.info("[Restart]: step_cnt: %d" % step_cnt)
             logging.info("[Restart]: loss_avg: %f" % loss_avg)
+        elif args.train_mode == 'finetune':
+            wpath_load = pathlib.Path(args.ckpt_dir) / pathlib.Path(args.workspace_finetune)
+            _, client_state = self.model_engine.load_checkpoint(wpath_load, args.ckpt_id_finetune)
+            epoch = 0
+            step_cnt = 0
+            logging.info("[Finetune]: %s" % wpath_load)
+            logging.info("[Finetune]: %s" % args.ckpt_id_finetune)
+            logging.info("[Initial start]")
         else:
             epoch = 0
             step_cnt = 0
@@ -233,12 +243,13 @@ class Trainer:
         while step_cnt < args.train_iters:
             try:
                 record = next(self.tr_iter)
-            except:
+            except Exception:
                 epoch += 1
                 self.tr_sampler.set_epoch(epoch)
                 self.tr_iter = iter(self.tr_dataloader)
                 record = next(self.tr_iter)
                 logging.info("[Reload train data] %d" % step_cnt)
+                logging.exception("[Error ]")
 
             loss, loss_avg, acc_avg = self._train_step(record, args)
             logging.info("[Loss] %f" % loss_avg)
@@ -269,7 +280,7 @@ class Trainer:
                     "Time (sec)": time.time() - t_start
                 }, step=step_cnt)
 
-            if step_cnt % 2000 == 0:
+            if step_cnt % args.ckpt_save_steps == 0:
                 fstring = 'epoch%d-step%d' % (epoch, step_cnt)
                 self.model_engine.save_checkpoint(wpath, fstring, client_state={
                     'epoch': epoch,
@@ -285,40 +296,45 @@ class Trainer:
 if __name__ == '__main__':
     args = get_ds_args()
 
-    selected_config = None
-    if args.model_select == '112m':
-        selected_config = kogpt2_config_112m
-    elif args.model_select == '112m_half':
-        selected_config = kogpt2_config_112m_half
-    elif args.model_select == '345m':
-        selected_config = kogpt2_config_345m
-
-    if selected_config is None:
-        logging.error("[Fail]: Select model type")
-        raise NotImplementedError
-
-    vocab_size = int(args.vocab_id_dir.split('_')[1])
+    vocab_size, vocab_file, merge_file = extract_vocab_path(args)
+    selected_config = load_gpt2_config(args)
     selected_config['vocab_size'] = vocab_size
 
     args.selected_config = selected_config
     logging.info("vocab size %s" % vocab_size)
 
-    vocab_dir = pathlib.Path(args.vocab_load_dir) /pathlib.Path(args.vocab_id_dir)
-    vocab_file = list(vocab_dir.glob("*-vocab.json"))[0]
-    vocab_file = str(vocab_file)
-    merge_file = list(vocab_dir.glob("*-merges.txt"))[0]
-    merge_file = str(merge_file)
 
-    tokenizer = get_tokenizer(vocab_file=vocab_file,
-                              merge_file=merge_file,
-                              enable_postprocessiing=True,
-                              enable_padding=True,
-                              max_len=selected_config['n_ctx'])
 
     model = get_gpt2_model(config_dict=selected_config)
 
-    mw = MongoWrapper(args.config_train)
-    dataset = MaskedLMDataset(mw,
-                              tokenizer)
+    if args.train_mode == 'pretrain':
+        tokenizer = get_tokenizer(vocab_file=vocab_file,
+                                  merge_file=merge_file,
+                                  enable_padding=args.enable_padding,
+                                  enable_bos=args.enable_bos,
+                                  enable_eos=args.enable_eos,
+                                  max_len=selected_config['n_ctx']+1)
+
+        filter_func = None
+        mw = MongoWrapper(args.config_train,
+                          filter_func)
+        dataset = MaskedLMDataset(mw,
+                                  tokenizer)
+    elif args.train_mode == 'finetune':
+        tokenizer = get_tokenizer(vocab_file=vocab_file,
+                                  merge_file=merge_file,
+                                  enable_padding=args.enable_padding,
+                                  enable_bos=args.enable_bos,
+                                  enable_eos=args.enable_eos,
+                                  max_len=args.truncated_len)
+        filter_func = conv_filter
+        mw = MongoWrapper(args.config_train,
+                          filter_func)
+        dataset = ConvDataset(mw,
+                              tokenizer,
+                              max_len=selected_config['n_ctx'])
+    else:
+        raise NotImplementedError
+
     trainer = Trainer(model, dataset, args)
     trainer.train(args)

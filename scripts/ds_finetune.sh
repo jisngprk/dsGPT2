@@ -11,12 +11,20 @@ DISTRIBUTED_ARGS="--nproc_per_node $GPUS_PER_NODE --nnodes $NNODES --node_rank $
 
 python -m torch.distributed.launch $DISTRIBUTED_ARGS \
 	ds_trainer.py \
-	--wandb_dir kg_gpt2_server23 \
+	--enable_padding False \
+	--enable_bos True \
+	--enable_eos True \
+	--truncated_len 122 \
+	--wandb_dir kg_gpt2_finetune \
 	--model_select 112m \
+	--workspace finetune5 \
+	--train_mode finetune \
+	--workspace_finetune test25 \
+	--ckpt_id_finetune epoch1-step144000 \
 	--vocab_id_dir vocab_50257 \
-	--workspace test0 \
 	--eval_batch_size 128 \
 	--train_iters 150000 \
-	--config_train ./config/db_config_train.json \
+	--ckpt_save_steps 2000 \
+	--config_train ./config/db_config_finetune.json \
 	--deepspeed \
-	--deepspeed_config ./config/ds_config.json
+	--deepspeed_config ./config/ds_config_finetune.json

@@ -25,6 +25,17 @@ import torch
 import deepspeed
 
 
+def str2bool(v):
+    if isinstance(v, bool):
+       return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
+
 def add_model_config_args(parser):
     """Model arguments"""
 
@@ -37,11 +48,46 @@ def add_model_config_args(parser):
     return parser
 
 
+def add_tokenizer_config_args(parser):
+    group = parser.add_argument_group('tokenizer', 'tokenizer configuration')
+
+    group.add_argument('--vocab_load_dir',
+                       type=str,
+                       default='./vocab',
+                       help='checkpoint directory name')
+
+    group.add_argument('--vocab_id_dir',
+                       type=str,
+                       default='vocab_50257',
+                       help='checkpoint directory name')
+
+    group.add_argument('--enable_padding',
+                       type=str2bool,
+                       default=True,
+                       help='default: enable padding')
+
+    group.add_argument('--enable_bos',
+                       type=str2bool,
+                       default=True,
+                       help='default: enable bos')
+
+    group.add_argument('--enable_eos',
+                       type=str2bool,
+                       default=True,
+                       help='default: enable eos')
+
+    group.add_argument('--truncated_len',
+                       type=int,
+                       default=128,
+                       help='maximum length of tokenized sentence')
+
+    return parser
+
+
 def add_fp16_config_args(parser):
     """Mixed precision arguments."""
 
     group = parser.add_argument_group('fp16', 'fp16 configurations')
-
 
     return parser
 
@@ -50,6 +96,11 @@ def add_training_args(parser):
     """Training arguments."""
 
     group = parser.add_argument_group('train', 'training configurations')
+
+    group.add_argument('--train_mode',
+                       type=str,
+                       default='pretrain',
+                       help='training goal. One of [pretrain, finetune]')
 
     group.add_argument('--seed',
                        type=int,
@@ -66,6 +117,11 @@ def add_training_args(parser):
                        default='test0',
                        help='workspace directory name')
 
+    group.add_argument('--workspace_finetune',
+                       type=str,
+                       default='test0',
+                       help='workspace directory name')
+
     group.add_argument('--restart',
                        type=bool,
                        default=False,
@@ -76,14 +132,9 @@ def add_training_args(parser):
                        default='epoch:0-step:13000',
                        help='checkpoint directory name')
 
-    group.add_argument('--vocab_load_dir',
+    group.add_argument('--ckpt_id_finetune',
                        type=str,
-                       default='./vocab',
-                       help='checkpoint directory name')
-
-    group.add_argument('--vocab_id_dir',
-                       type=str,
-                       default='vocab_50257',
+                       default='epoch:0-step:13000',
                        help='checkpoint directory name')
 
     group.add_argument('--train_iters',
@@ -93,7 +144,7 @@ def add_training_args(parser):
 
     group.add_argument('--tr_ratio',
                        type=float,
-                       default=0.95,
+                       default=0.99,
                        help='ratio of training set in total dataset')
 
     group.add_argument('--loss_type',
@@ -105,6 +156,11 @@ def add_training_args(parser):
                         type=str,
                         default='kg_gpt2_0215',
                         help='for setting wandb project')
+
+    group.add_argument('--ckpt_save_steps',
+                       type=int,
+                       default=2000,
+                       help='save checkpoint for every # of steps')
 
     # distributed training args
     group.add_argument('--distributed-backend',
@@ -130,17 +186,6 @@ def add_evaluation_args(parser):
                        default=128,
                        help='# of batch size for evaluating on each GPU')
 
-    # group.add_argument('--loadl_dir',
-    #                    type=str,
-    #                    default='./checkpoints/test2',
-    #                    help='checkpoint parent directory')
-    #
-    # group.add_argument('--ckpt_id',
-    #                    type=str,
-    #                    default='epoch7-step78000-loss4.06',
-    #                    help='checkpoint id directory')
-
-
     return parser
 
 
@@ -148,6 +193,52 @@ def add_text_generate_args(parser):
     """Text generate arguments."""
 
     group = parser.add_argument_group('Text generation', 'configurations')
+
+    group.add_argument('--use_cpu',
+                       type=str2bool,
+                       default=False,
+                       help='use cpu or not. If not, gpu is selected')
+
+    group.add_argument('--gpu_id',
+                        type=int,
+                        default=0,
+                        help='select gpu id')
+
+    group.add_argument('--min_length',
+                       type=int,
+                       default=100,
+                       help='minimum token length')
+
+    group.add_argument('--max_length',
+                       type=int,
+                       default=120,
+                       help='maximum token length')
+
+    group.add_argument('--do_sample',
+                       type=bool,
+                       default=True,
+                       help='generate sequence with sampling')
+
+    group.add_argument('--top_k',
+                       type=int,
+                       default=30,
+                       help='# of k for top k sampling')
+
+    group.add_argument('--temperature',
+                       type=float,
+                       default=0.9,
+                       help='temperature parameter. Lower temperature make the prob distribution sharper')
+
+    group.add_argument('--repetition_penalty',
+                       type=float,
+                       default=1.2,
+                       help='repetition penalty. It is multiplied to temperature')
+
+    group.add_argument('--num_beams',
+                       type=int,
+                       default=1,
+                       help='# of beam search')
+
 
     return parser
 
@@ -217,6 +308,7 @@ def get_ds_args():
 
     parser = argparse.ArgumentParser(description='PyTorch koGPT2 Model')
     parser = add_model_config_args(parser)
+    parser = add_tokenizer_config_args(parser)
     parser = add_training_args(parser)
     parser = add_evaluation_args(parser)
     parser = add_text_generate_args(parser)
@@ -252,6 +344,16 @@ def get_preprocessing_args():
 
     parser = argparse.ArgumentParser(description='PyTorch BERT Model')
     parser = add_preprocessing_args(parser)
+
+    args = parser.parse_args()
+
+    return args
+
+
+def get_clean_args():
+    parser = argparse.ArgumentParser(description='PyTorch BERT Model')
+    parser = add_preprocessing_args(parser)
+    parser = add_tokenizer_config_args(parser)
 
     args = parser.parse_args()
 
