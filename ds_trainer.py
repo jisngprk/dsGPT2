@@ -218,7 +218,7 @@ class Trainer:
         if args.restart:
             _, client_state = self.model_engine.load_checkpoint(wpath, args.ckpt_id)
             epoch = client_state['epoch']
-            step_cnt = client_state['step_cnt']
+            step_cnt = client_state['step']
             loss_avg = client_state['loss_avg']
             logging.info("[Restart]")
             logging.info("[Restart]: epoch: %d" % epoch)
