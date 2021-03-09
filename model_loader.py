@@ -101,10 +101,15 @@ class ModelLoader:
                                       eos_token_id=self.tokenizer.token_to_id('</s>'),
                                       min_length=self.args.min_length,
                                       max_length=self.args.max_length,
-                                      num_beams=self.args.num_beams)
+                                      do_sample=self.args.do_sample,
+                                      top_p=self.args.top_p,
+                                      temperature=self.args.temperature,
+                                      repetition_penalty=self.args.repetition_penalty)
         else:
             raise NotImplementedError
 
+        print(self.args.min_length)
+        print(self.args.max_length)
         out_ids = out[0].tolist()
         out_sent = self.tokenizer.decode(out_ids)
         out_sent = self._handle_replace_str(out_sent)
