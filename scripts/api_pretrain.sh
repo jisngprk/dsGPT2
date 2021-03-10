@@ -16,6 +16,5 @@ python api.py \
 	    --temperature 0.9 \
       --repetition_penalty 1.5 \
 	    --train_mode pretrain \
-	    --num_beams 5 \
 	    --use_cpu True \
 	    --port 4000

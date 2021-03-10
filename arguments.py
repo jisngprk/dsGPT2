@@ -224,6 +224,11 @@ def add_text_generate_args(parser):
                        default=30,
                        help='# of k for top k sampling')
 
+    group.add_argument('--top_p',
+                       type=float,
+                       default=1.0,
+                       help='# of k for top k sampling')
+
     group.add_argument('--temperature',
                        type=float,
                        default=0.9,

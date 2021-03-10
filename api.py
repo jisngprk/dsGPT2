@@ -24,7 +24,7 @@ class Generator(Resource):
 
         out_dict = {"input": sentence, "response": resp_sent}
 
-        resp = make_response(json.dumps(out_dict), 200)
+        resp = make_response(json.dumps(out_dict, ensure_ascii=False), 200)
         resp.headers['Cache-Control'] = 'no-cache,no-store,must-revalidate'
         resp.headers.extend({
             "content-type": "application/json"
