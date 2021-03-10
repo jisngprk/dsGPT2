@@ -1,5 +1,5 @@
 #! /bin/bash
 
 python uploader.py \
-      --src_config ./config/db_config_nikl_spoken
+      --config_src ./config/db_config_nikl_web.json
 

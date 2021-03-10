@@ -6,6 +6,31 @@ The goal is as follows:
 * Identify that the limitations of training the large scaled language model in limited resource
 * Develop conversational model with GPT2 pretrained with conversation
 
+## Try It out
+
+#### Pretrained Model API
+
+http://34.82.253.174:4000/generate?sentence=구글과 삼성전자는 오는 13일
+
+![2](https://user-images.githubusercontent.com/24973802/110638370-d1175200-81f1-11eb-8c0a-a7775367a90c.PNG)
+
+- top_k or top_p: 
+- do_sample:
+- num_beams:  
+- min_length:
+- max_length:
+
+#### Conversational Model API
+
+http://34.82.253.174:4001/generate?sentence=점심 뭐 먹을지 추천좀 해줄래?
+
+![1](https://user-images.githubusercontent.com/24973802/110637089-6285c480-81f0-11eb-80b3-aacd9e451488.PNG)
+
+- top_k or top_p: 
+- do_sample: 
+- min_length:
+- max_length:
+
 ## Dependencies
 * MongoDB
 * DeepSpeed
@@ -18,7 +43,7 @@ The goal is as follows:
     * *Fast* 
         - Fetching document with indexing collection (0.1ms/1doc)
     * *Memory-Efficient* 
-        - Lazy loading (memory usage TODO)  
+        - Lazy loading   
     * *Seamless integration* 
         - Collections accessible by unified index      
     
@@ -117,7 +142,7 @@ The script run vocab_trainer.py <br>
 It trains ByteLevelBPETokenizer.
 
 ```shell script
-bash scripts/vocab_trainer.sh
+bash scripts/vocab_builder.sh
 ```
 ### Train the model
 The script run ds_trainer.py
@@ -130,18 +155,29 @@ bash scripts/ds_trainer.sh
 ```
 
 The detail of command-line usage is as follows:
-
-    
-    usage: ds_trainer.py [-h] [--model_select MODEL_SELECT] [--seed SEED]
-                         [--ckpt_dir CKPT_DIR] [--workspace WORKSPACE]
-                         [--restart RESTART] [--ckpt_id CKPT_ID]
+        
+    usage: ds_trainer.py [-h] [--model_select MODEL_SELECT]
                          [--vocab_load_dir VOCAB_LOAD_DIR]
-                         [--vocab_id_dir VOCAB_ID_DIR] [--train_iters TRAIN_ITERS]
-                         [--tr_ratio TR_RATIO] [--loss_type LOSS_TYPE]
-                         [--wandb_dir WANDB_DIR]
+                         [--vocab_id_dir VOCAB_ID_DIR]
+                         [--enable_padding ENABLE_PADDING]
+                         [--enable_bos ENABLE_BOS] [--enable_eos ENABLE_EOS]
+                         [--truncated_len TRUNCATED_LEN] [--train_mode TRAIN_MODE]
+                         [--seed SEED] [--ckpt_dir CKPT_DIR]
+                         [--workspace WORKSPACE]
+                         [--workspace_finetune WORKSPACE_FINETUNE]
+                         [--restart RESTART] [--ckpt_id CKPT_ID]
+                         [--ckpt_id_finetune CKPT_ID_FINETUNE]
+                         [--train_iters TRAIN_ITERS] [--tr_ratio TR_RATIO]
+                         [--loss_type LOSS_TYPE] [--wandb_dir WANDB_DIR]
+                         [--ckpt_save_steps CKPT_SAVE_STEPS]
                          [--distributed-backend DISTRIBUTED_BACKEND]
                          [--local_rank LOCAL_RANK]
-                         [--eval_batch_size EVAL_BATCH_SIZE]
+                         [--eval_batch_size EVAL_BATCH_SIZE] [--use_cpu USE_CPU]
+                         [--gpu_id GPU_ID] [--min_length MIN_LENGTH]
+                         [--max_length MAX_LENGTH] [--do_sample DO_SAMPLE]
+                         [--top_k TOP_K] [--temperature TEMPERATURE]
+                         [--repetition_penalty REPETITION_PENALTY]
+                         [--num_beams NUM_BEAMS] [--port PORT]
                          [--config_train CONFIG_TRAIN] [--deepspeed]
                          [--deepspeed_config DEEPSPEED_CONFIG] [--deepscale]
                          [--deepscale_config DEEPSCALE_CONFIG] [--deepspeed_mpi]
@@ -160,24 +196,44 @@ The detail of command-line usage is as follows:
                             model selection parameter. One of [112m, 112m_half,
                             345m]
     
+    tokenizer:
+      tokenizer configuration
+    
+      --vocab_load_dir VOCAB_LOAD_DIR
+                            checkpoint directory name
+      --vocab_id_dir VOCAB_ID_DIR
+                            checkpoint directory name
+      --enable_padding ENABLE_PADDING
+                            default: enable padding
+      --enable_bos ENABLE_BOS
+                            default: enable bos
+      --enable_eos ENABLE_EOS
+                            default: enable eos
+      --truncated_len TRUNCATED_LEN
+                            maximum length of tokenized sentence
+    
     train:
       training configurations
     
+      --train_mode TRAIN_MODE
+                            training goal. One of [pretrain, finetune]
       --seed SEED           random seed
       --ckpt_dir CKPT_DIR   directory for save checkpoint
       --workspace WORKSPACE
                             workspace directory name
+      --workspace_finetune WORKSPACE_FINETUNE
+                            workspace directory name
       --restart RESTART     restart training
       --ckpt_id CKPT_ID     checkpoint directory name
-      --vocab_load_dir VOCAB_LOAD_DIR
-                            checkpoint directory name
-      --vocab_id_dir VOCAB_ID_DIR
+      --ckpt_id_finetune CKPT_ID_FINETUNE
                             checkpoint directory name
       --train_iters TRAIN_ITERS
                             # of iterations for training
       --tr_ratio TR_RATIO   ratio of training set in total dataset
       --loss_type LOSS_TYPE
                             loss selection argument. Only "lm_loss" is supported
+      --ckpt_save_steps CKPT_SAVE_STEPS
+                            save checkpoint for every # of steps
       --distributed-backend DISTRIBUTED_BACKEND
                             which backend to use for distributed training. One of
                             [gloo, nccl]
@@ -192,6 +248,24 @@ The detail of command-line usage is as follows:
     
     Text generation:
       configurations
+    
+      --use_cpu USE_CPU     use cpu or not. If not, gpu is selected
+      --gpu_id GPU_ID       select gpu id
+      --min_length MIN_LENGTH
+                            minimum token length
+      --max_length MAX_LENGTH
+                            maximum token length
+      --do_sample DO_SAMPLE
+                            generate sequence with sampling
+      --top_k TOP_K         # of k for top k sampling
+      --temperature TEMPERATURE
+                            temperature parameter. Lower temperature make the prob
+                            distribution sharper
+      --repetition_penalty REPETITION_PENALTY
+                            repetition penalty. It is multiplied to temperature
+      --num_beams NUM_BEAMS
+                            # of beam search
+      --port PORT           API port
     
     data:
       data configurations
@@ -226,9 +300,15 @@ The detail of command-line usage is as follows:
 |Total|  95.5M 
 
 * Word count ~= 2B
-* Data source: 국립국어원 모두의 말뭉치 (웹 말뭉치, 신문 말뭉치, 문어 말뭉치, 구어 말뭉치, 메신저 말뭉치)^M
+* Data source: 국립국어원 모두의 말뭉치 ver 1.0 
+   - 웹 말뭉치, 신문 말뭉치, 문어 말뭉치, 구어 말뭉치, 메신저 말뭉치
 
 
 ### Evaluate
 
-### Result
+| # of parameters  |  Loss
+|---|---|
+|112M|  ~ 3.9 | 
+
+#### Loss graph
+

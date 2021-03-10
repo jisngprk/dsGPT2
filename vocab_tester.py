@@ -21,6 +21,7 @@ if __name__ == '__main__':
 
     input_str = "이날은 날씨가 좋다"
     output = tokenizer.encode(input_str)
-    ouput_str = tokenizer.decode(output.ids)
+    output_str = tokenizer.decode(output.ids)
+    print(output_str)
 
 
