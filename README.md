@@ -10,7 +10,9 @@ The goal is as follows:
 
 #### Pretrained Model API
 
-http://34.82.253.174:4000/generate?sentence=구글과 삼성전자는 오는 13일
+```
+GET http://34.82.253.174:4000/generate?sentence=구글과 삼성전자는 오는 13일 
+```
 
 ![2](https://user-images.githubusercontent.com/24973802/110638370-d1175200-81f1-11eb-8c0a-a7775367a90c.PNG)
 
@@ -22,7 +24,9 @@ http://34.82.253.174:4000/generate?sentence=구글과 삼성전자는 오는 13�
 
 #### Conversational Model API
 
-http://34.82.253.174:4001/generate?sentence=점심 뭐 먹을지 추천좀 해줄래?
+```
+GET http://34.82.253.174:4000/generate?sentence=점심 뭐 먹을지 추천좀 해줄래? 
+```
 
 ![1](https://user-images.githubusercontent.com/24973802/110637089-6285c480-81f0-11eb-80b3-aacd9e451488.PNG)
 
