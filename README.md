@@ -289,6 +289,15 @@ The detail of command-line usage is as follows:
                             from the MPI environment
 
 
+### Run the API
+```shell script
+bash scripts/api_pretrain.sh
+```
+
+```shell script
+bash scripts/api_finetune.sh
+```
+
 ### Data
 | Data  |  # of Documents  |
 |---|---|
