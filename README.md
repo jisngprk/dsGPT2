@@ -109,13 +109,13 @@ The files are located in config directory
 ### Build/Run Docker
 0. Make directory './vocab', './checkpoints' and make './config/db_config.json'. Also make './data_files' directory to save vocab training files.
 
-1. You can build the image with Dockerfile-dev. It download deepspeed image used for torch 1.5^M
+1. You can build the image with Dockerfile-dev. It download deepspeed image used for torch 1.5
     ```shell script
     docker build -t IMAGE_TAG -f Dockerfile-dev .
     ```
 
 
-2. Run .sh files with the image using the commands:^M
+2. Run .sh files with the image using the commands:
     ```shell script
     docker run -d --name CONTAINER_NAME -e WANDB_API_KEY=WANDB_KEY --gpus='"device=0,1"' --network host -v PROJECT_DIR:/usr/src/app -w /usr/src/app DOCKER_IMAGE bash scripts/ds_trainer.sh
     ```
