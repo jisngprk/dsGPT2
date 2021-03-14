@@ -24,7 +24,7 @@ GET http://34.82.253.174:4000/generate?sentence=삼성전자와 테슬라는 협
 
 
 ```
-GET http://34.82.253.174:4000/generate?sentence=점심 뭐 먹을래? 
+GET http://34.82.253.174:4001/generate?sentence=점심 뭐 먹을래? 
 ```
 
 ![chat-1](https://user-images.githubusercontent.com/24973802/111060368-c0135d00-84df-11eb-8a7a-ed13a1334373.PNG)
