@@ -3,8 +3,8 @@
 ## Introduction
 The goal is as follows:
 * Build project that trains GPT2 with DeepSpeed library
-* Identify that the limitations of training the large scaled language model in limited resource
-* Develop conversational model with GPT2 pretrained with conversation
+* Check that the limitations of training the large scaled language model in limited resource
+* Develop conversational model with GPT2 pretrained with conversational data
 
 ## Try It out
 
