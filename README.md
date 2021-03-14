@@ -294,30 +294,32 @@ The detail of command-line usage is as follows:
 |---|---|
 |Newspaper|  37.2M| 
 |Spoken|  20.6M | 
-|Web|  10.5M | 
+|Web|  5.5M | 
 |Written|  27.2M
 |------|  ------ 
-|Total|  95.5M 
+|Total|  90.5M 
 
 * Word count ~= 2B
 * Data source: 국립국어원 모두의 말뭉치 ver 1.0 
    - 웹 말뭉치, 신문 말뭉치, 문어 말뭉치, 구어 말뭉치, 메신저 말뭉치
 
+* Conversational data is trained with messanger data (모두의 말뭉치 ver 1.0)
+
 
 ### Loss - pretrain 
 
-| # of parameters  | Step | Loss | PPL
-|---|---|---|---|
-|112M| 142k| ~ 3.9 | ~ 48.95  
+| # of parameters  | # of data | Step | Loss | PPL
+|---|---|---|---|---|
+|112M| 90.5M | 142k| ~ 3.9 | ~ 48.95  
 
 ![pretrain-loss](https://user-images.githubusercontent.com/24973802/111060533-e259aa80-84e0-11eb-891d-ec12e9a475c8.png)
 
 
 ### Loss - finetune
 
-| # of parameters | Step |  Loss | Acc   
-|---|---|---|---|
-|112M|  78k | ~ 0.048 | ~ 0.985 
+| # of parameters |# of data | Step |  Loss | Acc   
+|---|---|---|---|---|
+|112M| 0.3M | 78k | ~ 0.048 | ~ 0.985 
 
 ![finetune-loss](https://user-images.githubusercontent.com/24973802/111060658-d7534a00-84e1-11eb-9c60-0b3e9b933c30.png)
 
