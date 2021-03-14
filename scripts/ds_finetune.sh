@@ -17,11 +17,12 @@ python -m torch.distributed.launch $DISTRIBUTED_ARGS \
 	--truncated_len 122 \
 	--wandb_dir kg_gpt2_finetune \
 	--model_select 112m \
-	--workspace finetune5 \
 	--train_mode finetune \
-	--workspace_finetune test25 \
-	--ckpt_id_finetune epoch1-step144000 \
-	--vocab_id_dir vocab_50257 \
+	--workspace finetune8 \
+	--alpha 0.0 \
+	--workspace_finetune pretrain0314 \
+	--ckpt_id_finetune epoch1-step142000 \
+	--vocab_id_dir vocab_50257_ns \
 	--eval_batch_size 128 \
 	--train_iters 150000 \
 	--ckpt_save_steps 2000 \

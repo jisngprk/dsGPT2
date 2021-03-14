@@ -13,7 +13,7 @@ logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', stream=sy
 
 
 class ConvDataset(Dataset):
-    def __init__(self, mw, tokenizer, max_len):
+    def __init__(self, mw, tokenizer, max_len, alpha=0.0):
         self._data = mw
 
         self.tokenizer = tokenizer
@@ -33,6 +33,7 @@ class ConvDataset(Dataset):
         self.max_len = max_len
 
         self.initial_log = True
+        self.alpha = alpha
         logging.info("[Success]: Load dataset")
 
     def __len__(self):
@@ -51,11 +52,21 @@ class ConvDataset(Dataset):
         ] + self.tokenizer.encode(q).ids
         usr_len = len(usr_ids)
 
-        # <sys> <s> .. </s>
-        sys_ids = [
-            self.sys_token_id,
-        ] + self.tokenizer.encode(a).ids
-        sys_len = len(sys_ids)
+        randf = np.random.uniform(0, 1)
+        if randf < self.alpha:
+            # logging.info("[Alpha blending - %f]: On" % self.alpha)
+            # <sys> <s> .. </s>
+            sys_ids = [
+                          self.sys_token_id,
+                      ] + self.tokenizer.encode(q).ids
+            sys_len = len(sys_ids)
+        else:
+            # logging.info("[Alpha blending - %f]: Off" % self.alpha)
+            # <sys> <s> .. </s>
+            sys_ids = [
+                self.sys_token_id,
+            ] + self.tokenizer.encode(a).ids
+            sys_len = len(sys_ids)
 
         prev_usr_len = usr_len
         prev_sys_len = sys_len
@@ -113,8 +124,6 @@ if __name__ == '__main__':
     config_path = './config/db_config_finetune.json'
     mw = MongoWrapper(config_path,
                       filter_func=conv_filter)
-    dataset = ConvDataset(mw=mw,
-                          tokenizer=tokenizer,
-                          max_len=128)
+    dataset = ConvDataset(mw=mw, tokenizer=tokenizer, max_len=128)
     data = dataset[100]
     print(data)

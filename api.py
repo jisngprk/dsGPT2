@@ -42,4 +42,5 @@ if __name__ == '__main__':
 
     api.add_resource(Generator, '/generate', resource_class_kwargs={'env_args': args})
 
-    app.run(host='0.0.0.0', port=args.port, threaded=False, debug=False)
+    app.run(host='0.0.0.0', port=args.port, threaded=True, debug=False)
+

@@ -107,6 +107,11 @@ def add_training_args(parser):
                        default=123,
                        help='random seed')
 
+    group.add_argument('--alpha',
+                       type=float,
+                       default=0.0,
+                       help='alpha blending ratio')
+
     group.add_argument('--ckpt_dir',
                        type=str,
                        default='./checkpoints',

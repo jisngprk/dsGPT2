@@ -62,7 +62,7 @@ class ModelLoader:
         self.user_info[session_key] = user_name
 
     def _handle_replace_str(self, sentence):
-        sentence = re.sub("name[0-9]+", "", sentence)
+        sentence = re.sub("name[0-9]+", "OO", sentence)
         return sentence
 
     def generate(self, sentence):
@@ -90,7 +90,7 @@ class ModelLoader:
                                       min_length=self.args.min_length,
                                       max_length=self.args.max_length,
                                       do_sample=self.args.do_sample,
-                                      top_k=self.args.top_k,
+                                      top_p=self.args.top_p,
                                       temperature=self.args.temperature,
                                       repetition_penalty=self.args.repetition_penalty)
         elif self.args.train_mode == 'finetune':
@@ -111,6 +111,8 @@ class ModelLoader:
         print(self.args.min_length)
         print(self.args.max_length)
         out_ids = out[0].tolist()
+        print(len(enc_ids))
+        print(len(out_ids))
         out_sent = self.tokenizer.decode(out_ids)
         out_sent = self._handle_replace_str(out_sent)
         enc_sent = self.tokenizer.decode(enc_ids)
@@ -127,6 +129,7 @@ class ModelLoader:
         resp_sent = resp_sent.replace("<sys>", "")
         resp_sent = resp_sent.replace("<usr>", "")
         resp_sent = resp_sent.replace("<pad>", "")
+
 
         return out_ids, out_sent, enc_sent, resp_sent
 

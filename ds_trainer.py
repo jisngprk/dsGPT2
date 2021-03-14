@@ -303,8 +303,6 @@ if __name__ == '__main__':
     args.selected_config = selected_config
     logging.info("vocab size %s" % vocab_size)
 
-
-
     model = get_gpt2_model(config_dict=selected_config)
 
     if args.train_mode == 'pretrain':
@@ -332,7 +330,8 @@ if __name__ == '__main__':
                           filter_func)
         dataset = ConvDataset(mw,
                               tokenizer,
-                              max_len=selected_config['n_ctx'])
+                              max_len=selected_config['n_ctx'],
+                              alpha=args.alpha)
     else:
         raise NotImplementedError
 
