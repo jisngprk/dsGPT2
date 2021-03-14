@@ -8,32 +8,28 @@ The goal is as follows:
 
 ## Try It out
 
-#### Pretrained Model API
-
+#### Pretrained Model API 
+###### checkpoint: 142k step 
+ 
 ```
-GET http://34.82.253.174:4000/generate?sentence=구글과 삼성전자는 오는 13일 
-```
-
-![2](https://user-images.githubusercontent.com/24973802/110638370-d1175200-81f1-11eb-8c0a-a7775367a90c.PNG)
-
-- top_k or top_p: 
-- do_sample:
-- num_beams:  
-- min_length:
-- max_length:
-
-#### Conversational Model API
-
-```
-GET http://34.82.253.174:4000/generate?sentence=점심 뭐 먹을지 추천좀 해줄래? 
+GET http://34.82.253.174:4000/generate?sentence=삼성전자와 테슬라는 협업을 
 ```
 
-![1](https://user-images.githubusercontent.com/24973802/110637089-6285c480-81f0-11eb-80b3-aacd9e451488.PNG)
+![1](https://user-images.githubusercontent.com/24973802/111060333-76c30d80-84df-11eb-800b-0bdb5495330e.PNG)
 
-- top_k or top_p: 
-- do_sample: 
-- min_length:
-- max_length:
+![2](https://user-images.githubusercontent.com/24973802/111060353-aa059c80-84df-11eb-9168-683c9f300b9e.PNG)
+
+#### Conversational Model API 
+###### checkpoint: 78k step
+
+
+```
+GET http://34.82.253.174:4000/generate?sentence=점심 뭐 먹을래? 
+```
+
+![chat-1](https://user-images.githubusercontent.com/24973802/111060368-c0135d00-84df-11eb-8a7a-ed13a1334373.PNG)
+
+![chat-2](https://user-images.githubusercontent.com/24973802/111060403-ef29ce80-84df-11eb-9c89-52648fb81b1f.PNG)
 
 ## Dependencies
 * MongoDB
@@ -308,11 +304,22 @@ The detail of command-line usage is as follows:
    - 웹 말뭉치, 신문 말뭉치, 문어 말뭉치, 구어 말뭉치, 메신저 말뭉치
 
 
-### Evaluate
+### Loss - pretrain 
 
-| # of parameters  |  Loss
-|---|---|
-|112M|  ~ 3.9 | 
+| # of parameters  | Step | Loss | PPL
+|---|---|---|---|
+|112M| 142k| ~ 3.9 | ~ 48.95  
 
-#### Loss graph
+![pretrain-loss](https://user-images.githubusercontent.com/24973802/111060533-e259aa80-84e0-11eb-891d-ec12e9a475c8.png)
+
+
+### Loss - finetune
+
+| # of parameters | Step |  Loss | Acc   
+|---|---|---|---|
+|112M|  78k | ~ 0.048 | ~ 0.985 
+
+![finetune-loss](https://user-images.githubusercontent.com/24973802/111060658-d7534a00-84e1-11eb-9c60-0b3e9b933c30.png)
+
+![finetune-acc](https://user-images.githubusercontent.com/24973802/111060657-d4f0f000-84e1-11eb-813a-69377c83e97c.png) 
 
